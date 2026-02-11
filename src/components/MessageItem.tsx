@@ -1,0 +1,188 @@
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  IconButton,
+  TextField,
+} from "@mui/material";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Check as CheckIcon,
+  Cancel as CancelIcon,
+} from "@mui/icons-material";
+import { HighlightText } from "./HighlightText";
+import type { Message, Colors } from "../types";
+import { formatRelativeTime } from "../utils/dateFormatter";
+
+type MessageItemProps = {
+  message: Message;
+  colors: Colors;
+  isEditing: boolean;
+  editingText: string;
+  searchText: string;
+  onEditTextChange: (text: string) => void;
+  onStartEdit: (id: string, text: string) => void;
+  onCancelEdit: () => void;
+  onSaveEdit: () => void;
+  onDeleteMessage: (id: string) => void;
+};
+
+export const MessageItem = ({
+  message,
+  colors,
+  isEditing,
+  editingText,
+  searchText,
+  onEditTextChange,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  onDeleteMessage,
+}: MessageItemProps) => {
+
+  return (
+    <Card
+      key={message.id}
+      elevation={3}
+      sx={{
+        borderRadius: { xs: 2, sm: 3 },
+        overflow: "hidden",
+        background: colors.surface,
+        backdropFilter: "blur(20px)",
+        border: "1px solid rgba(59, 130, 246, 0.1)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 12px 30px rgba(59, 130, 246, 0.15)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        {isEditing && (
+          <Box>
+            <IconButton size="small" color="primary" onClick={onSaveEdit}>
+              <CheckIcon />
+            </IconButton>
+            <IconButton size="small" onClick={onCancelEdit}>
+              <CancelIcon />
+            </IconButton>
+          </Box>
+        )}
+        {isEditing ? (
+          <TextField
+            fullWidth
+            variant="outlined"
+            multiline
+            autoFocus
+            rows={4}
+            value={editingText}
+            onChange={(e) => onEditTextChange(e.target.value)}
+          />
+        ) : (
+          <Typography
+            variant="body1"
+            component="p"
+            sx={{
+              lineHeight: 1.7,
+              color: "#1f2937",
+              fontSize: { xs: "0.95rem", sm: "1rem" },
+              fontWeight: 400,
+              mb: message.image ? 2 : 0,
+            }}
+          >
+            <HighlightText
+              text={message.text}
+              searchText={searchText}
+            />
+            <Typography variant="caption" sx={{ color: 'gray' }}>
+              {message.updateAt !== message.createdAt && '(編集済み)'}
+            </Typography>
+          </Typography>
+        )}
+        <Box sx={{ mb: 2 }}>
+          <Chip
+            label={formatRelativeTime(message.date)}
+            size="small"
+            variant="outlined"
+            sx={{
+              height: 24,
+              fontSize: "0.75rem",
+              color: colors.primary,
+              borderColor: colors.primary,
+              backgroundColor: "rgba(59, 130, 246, 0.05)",
+            }}
+          />
+        </Box>
+
+        {message.image && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Box
+              component="img"
+              alt={message.imageName}
+              src={message.image}
+              sx={{
+                maxWidth: "100%",
+                maxHeight: 300,
+                objectFit: "contain",
+                borderRadius: 2,
+                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.1)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                },
+              }}
+            />
+          </Box>
+        )}
+      </CardContent>
+
+      <Divider />
+
+      <CardActions
+        sx={{
+          justifyContent: "flex-end",
+          p: { xs: 1.5, sm: 2 },
+        }}
+      >
+        {!isEditing && (
+          <Button
+            color="primary"
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={() => onStartEdit(message.id, message.text)}
+            sx={{
+              borderRadius: 2,
+            }}
+          >
+            編集
+          </Button>
+        )}
+        <Button
+          color="error"
+          size="small"
+          startIcon={<DeleteIcon />}
+          onClick={() => onDeleteMessage(message.id)}
+          sx={{
+            borderRadius: 2,
+            "&:hover": {
+              backgroundColor: "rgba(244, 67, 54, 0.08)",
+            },
+          }}
+        >
+          削除
+        </Button>
+      </CardActions>
+    </Card>
+  );
+};
